@@ -1,8 +1,8 @@
 if (process.env.NODE_ENV !== "production") {
-    require("dotenv").config();
-  }
+  require("dotenv").config();
+}
 
-
+const axios = require("axios");
 var express = require("express");
 var request = require("request");
 var crypto = require("crypto");
@@ -12,7 +12,7 @@ var cookieParser = require("cookie-parser");
 
 var client_id = process.env.CLIENT_ID; // your clientId
 var client_secret = process.env.CLIENT_SECRET; // Your secret
-var redirect_uri = process.env.REDIRECT_URI // Your redirect uri
+var redirect_uri = process.env.REDIRECT_URI; // Your redirect uri
 
 const generateRandomString = (length) => {
   return crypto.randomBytes(60).toString("hex").slice(0, length);
@@ -34,7 +34,7 @@ app.get("/login", function (req, res) {
 
   // your application requests authorization
   var scope = "user-read-private user-read-email";
-  res.redirect(
+  res.send(
     "https://accounts.spotify.com/authorize?" +
       querystring.stringify({
         response_type: "code",
@@ -54,7 +54,8 @@ app.get("/callback", function (req, res) {
   var state = req.query.state || null;
   var storedState = req.cookies ? req.cookies[stateKey] : null;
 
-  if (state === null || state !== storedState) {
+  // if (state === null || state !== storedState) {
+  if (state === null) {
     res.redirect(
       "/#" +
         querystring.stringify({
@@ -94,31 +95,28 @@ app.get("/callback", function (req, res) {
         // request.get(options, function (error, response, body) {
         //   console.log(body);
         // });
-
+        res.status(200).json({ access_token, refresh_token });
         // we can also pass the token to the browser to make requests from there
-        res.redirect(
-          "/?" +
-            querystring.stringify({
-              access_token: access_token,
-              refresh_token: refresh_token,
-            })
-        );
+        // res.redirect(
+        //   "/?" +
+        //     querystring.stringify({
+        //       access_token: access_token,
+        //       refresh_token: refresh_token,
+        //     })
+        // );
       } else {
-        res.redirect(
-          "/#" +
-            querystring.stringify({
-              error: "invalid_token",
-            })
-        );
+        res.status(400).json({ error: "invalid_token" });
+        // res.redirect(
+        //   "/#" +
+        //     querystring.stringify({
+        //       error: "invalid_token",
+        //     })
+        // );
       }
     });
   }
 });
 
-app.get("/", function (req, res) {
-  const { access_token, refresh_token } = req.query;
-  res.status(200).json({ access_token, refresh_token });
-});
 
 app.get("/refresh_token", function (req, res) {
   var refresh_token = req.query.refresh_token;
@@ -147,6 +145,23 @@ app.get("/refresh_token", function (req, res) {
       });
     }
   });
+});
+
+app.get("/getuser", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://api.spotify.com/v1/me",
+      {
+        headers: {
+          Authorization: req.headers.authorization,
+        },
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetch user");
+  }
 });
 
 console.log("Listening on 3000");
