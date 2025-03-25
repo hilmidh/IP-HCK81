@@ -2,6 +2,8 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 const axios = require("axios");
 var express = require("express");
 var request = require("request");
@@ -9,7 +11,7 @@ var crypto = require("crypto");
 var cors = require("cors");
 var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
-const { release } = require("os");
+const { GeminiControllers } = require("./controllers/geminiControllers");
 
 var client_id = process.env.CLIENT_ID; // your clientId
 var client_secret = process.env.CLIENT_SECRET; // Your secret
@@ -119,7 +121,7 @@ app.get("/callback", function (req, res) {
   }
 });
 
-app.get("/refresh_token", function (req, res) {
+app.post("/refresh_token", function (req, res) {
   var refresh_token = req.query.refresh_token;
   var authOptions = {
     url: "https://accounts.spotify.com/api/token",
@@ -165,7 +167,7 @@ app.get("/getuser", async (req, res) => {
 app.get("/gettoptracks", async (req, res) => {
   try {
     const response = await axios.get(
-      "https://api.spotify.com/v1/me/top/tracks?time_range=medium_term&limit=10",
+      "https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=10",
       {
         headers: {
           Authorization: req.headers.authorization,
@@ -175,7 +177,11 @@ app.get("/gettoptracks", async (req, res) => {
     const tracks = response.data.items.map((track) => {
       return {
         name: track.name,
-        artist: track.artists[0].name,
+        artist:
+          track.artists.length < 1
+            ? track.artists[0].name
+            : track.artists.map((artist) => artist.name).join(", "),
+        album: track.album.name,
         image: track.album.images[0].url,
         release_date: track.album.release_date,
       };
@@ -190,7 +196,7 @@ app.get("/gettoptracks", async (req, res) => {
 app.get("/gettopartists", async (req, res) => {
   try {
     const response = await axios.get(
-      "https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=10",
+      "https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=10",
       {
         headers: {
           Authorization: req.headers.authorization,
@@ -202,14 +208,16 @@ app.get("/gettopartists", async (req, res) => {
         name: artist.name,
         image: artist.images[0].url,
         genres: artist.genres,
-      }
-    } )
+      };
+    });
     res.json(artists);
   } catch (error) {
     console.error(error);
     res.status(500).send("Error fetch top artists");
   }
 });
+
+app.get("/generate", GeminiControllers.getGemini);
 
 console.log("Listening on 3000");
 app.listen(3000);
