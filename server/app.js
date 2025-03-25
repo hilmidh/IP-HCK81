@@ -9,6 +9,7 @@ var crypto = require("crypto");
 var cors = require("cors");
 var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
+const { release } = require("os");
 
 var client_id = process.env.CLIENT_ID; // your clientId
 var client_secret = process.env.CLIENT_SECRET; // Your secret
@@ -33,7 +34,8 @@ app.get("/login", function (req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = "user-read-private user-read-email";
+  var scope =
+    "user-read-private user-read-email user-top-read playlist-modify-public playlist-modify-private";
   res.send(
     "https://accounts.spotify.com/authorize?" +
       querystring.stringify({
@@ -117,7 +119,6 @@ app.get("/callback", function (req, res) {
   }
 });
 
-
 app.get("/refresh_token", function (req, res) {
   var refresh_token = req.query.refresh_token;
   var authOptions = {
@@ -149,18 +150,64 @@ app.get("/refresh_token", function (req, res) {
 
 app.get("/getuser", async (req, res) => {
   try {
+    const response = await axios.get("https://api.spotify.com/v1/me", {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetch user");
+  }
+});
+
+app.get("/gettoptracks", async (req, res) => {
+  try {
     const response = await axios.get(
-      "https://api.spotify.com/v1/me",
+      "https://api.spotify.com/v1/me/top/tracks?time_range=medium_term&limit=10",
       {
         headers: {
           Authorization: req.headers.authorization,
         },
       }
     );
-    res.json(response.data);
+    const tracks = response.data.items.map((track) => {
+      return {
+        name: track.name,
+        artist: track.artists[0].name,
+        image: track.album.images[0].url,
+        release_date: track.album.release_date,
+      };
+    });
+    res.json(tracks);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error fetch user");
+    res.status(500).send("Error fetch top tracks");
+  }
+});
+
+app.get("/gettopartists", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=10",
+      {
+        headers: {
+          Authorization: req.headers.authorization,
+        },
+      }
+    );
+    const artists = response.data.items.map((artist) => {
+      return {
+        name: artist.name,
+        image: artist.images[0].url,
+        genres: artist.genres,
+      }
+    } )
+    res.json(artists);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error fetch top artists");
   }
 });
 
