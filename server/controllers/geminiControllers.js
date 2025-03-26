@@ -8,7 +8,7 @@ class GeminiControllers {
 
     const headers = { Authorization: req.headers.authorization };
 
-    // Fetch top artists
+    ////////////////////////////// Fetch top artists
     try {
       const response = await axios.get(
         "https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=10",
@@ -26,7 +26,7 @@ class GeminiControllers {
         .json({ error: "Failed to fetch top artists" });
     }
 
-    // Fetch top tracks
+    /////////////////////////// Fetch top tracks
     try {
       const response = await axios.get(
         "https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=10",
@@ -45,7 +45,7 @@ class GeminiControllers {
       return res.status(500).json({ error: "Failed to fetch top tracks" });
     }
 
-    // Using Gemini Generative AI
+    /////////////////////// Using Gemini Generative AI
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({ error: "GEMINI_API_KEY is not set" });
     }
@@ -97,9 +97,10 @@ class GeminiControllers {
         .json({ error: "Failed to generate song recommendations" });
     }
 
-    //get song url
+    ////////////////get song uri
+    let songsUri = [];
     try {
-      const songsUrl = await Promise.all(
+      songsUri = await Promise.all(
         songsString.map(async (song, i) => {
           console.log(song, i);
           const response = await axios.get(
@@ -110,15 +111,14 @@ class GeminiControllers {
         })
       );
 
-      console.log(songsUrl);
-      // res.json(songsUrl); // Send the resolved songsUrl as the response
+      console.log(songsUri);
+      // res.json(songsUri); // Send the resolved songsUri as the response
     } catch (error) {
       console.error("Error fetching songs:", error);
       return res.status(500).json({ error: "Failed to fetch songs" });
     }
 
-
-    //get user id
+    //////////////get user id
     let id = "";
     try {
       const response = await axios.get("https://api.spotify.com/v1/me", {
@@ -130,27 +130,47 @@ class GeminiControllers {
       res.status(500).send("Error fetch user");
     }
 
-
-
-    //create playlist
+    //////////////create playlist
     let playlistUri = "";
     try {
       const response = await axios.post(
         `https://api.spotify.com/v1/users/${id}/playlists`,
         {
           name: "Recommended by SPOTT",
-          description: "SPOTT knows you best - Handpicked just for you, this playlist matches your vibe, mood, and taste. Sit back and enjoy the perfect tunes!",
+          description:
+            "SPOTT knows you best - Handpicked just for you, this playlist matches your vibe, mood, and taste. Sit back and enjoy the perfect tunes!",
           public: true,
         },
         { headers }
       );
-      playlistUri = response.data.uri;
+      playlistUri = response.data.id;
       console.log(playlistUri);
-      res.json(playlistUri); // Send the resolved playlistUri as the response
-
+      // res.json(playlistUri); // Send the resolved playlistUri as the response
     } catch (error) {
       console.error("Error creating playlist:", error);
       res.status(500).json({ error: "Failed to create playlist" });
+    }
+
+    ////////add songs to playlist
+    try {
+      const response = await axios.post(
+        `https://api.spotify.com/v1/playlists/${playlistUri}/tracks?position=0&uris=${songsUri.join(",").replace(/:/g, "%3A").replace(/,/g, "%2C")}`,
+        {
+          uris: 'string',
+          position: 0,
+        },
+        {
+          headers: {
+            Authorization: req.headers.authorization,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data);
+      res.json(response.data); // Send the resolved response as the response
+    } catch (error) {
+      console.error("Error adding songs to playlist:", error.message);
+      res.status(error.status).json({ error: "Failed to add songs to playlist" });
     }
   }
 }
