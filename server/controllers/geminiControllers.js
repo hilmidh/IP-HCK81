@@ -18,7 +18,7 @@ class GeminiControllers {
         name: artist.name,
         genres: artist.genres,
       }));
-      console.log(artists)
+      console.log(artists);
     } catch (error) {
       console.error("Error fetching top artists:", error);
       return res
@@ -39,7 +39,7 @@ class GeminiControllers {
             ? track.artists.map((artist) => artist.name).join(", ")
             : "Unknown Artist",
       }));
-      console.log(tracks)
+      console.log(tracks);
     } catch (error) {
       console.error("Error fetching top tracks:", error.message);
       return res.status(500).json({ error: "Failed to fetch top tracks" });
@@ -109,12 +109,48 @@ class GeminiControllers {
           return response.data.tracks.items[0].uri;
         })
       );
-    
+
       console.log(songsUrl);
-      res.json( songsUrl ); // Send the resolved songsUrl as the response
+      // res.json(songsUrl); // Send the resolved songsUrl as the response
     } catch (error) {
       console.error("Error fetching songs:", error);
       return res.status(500).json({ error: "Failed to fetch songs" });
+    }
+
+
+    //get user id
+    let id = "";
+    try {
+      const response = await axios.get("https://api.spotify.com/v1/me", {
+        headers,
+      });
+      id = response.data.id;
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Error fetch user");
+    }
+
+
+
+    //create playlist
+    let playlistUri = "";
+    try {
+      const response = await axios.post(
+        `https://api.spotify.com/v1/users/${id}/playlists`,
+        {
+          name: "Recommended by SPOTT",
+          description: "SPOTT knows you best - Handpicked just for you, this playlist matches your vibe, mood, and taste. Sit back and enjoy the perfect tunes!",
+          public: true,
+        },
+        { headers }
+      );
+      playlistUri = response.data.uri;
+      console.log(playlistUri);
+      res.json(playlistUri); // Send the resolved playlistUri as the response
+
+    } catch (error) {
+      console.error("Error creating playlist:", error);
+      res.status(500).json({ error: "Failed to create playlist" });
     }
   }
 }
