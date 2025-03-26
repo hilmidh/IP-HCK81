@@ -1,9 +1,38 @@
 
 import { getBaseUrl } from "../helpers/getBaseUrl";
+import { GoogleLogin } from '@react-oauth/google';
 import axios from "axios";
+// import { useEffect } from "react";
 
 export function Login() {
-    
+  // useEffect(() => {
+  //   window.google.accounts.id.initialize({
+  //     // fill this with your own client ID
+  //     client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+  //     // callback function to handle the response
+  //     callback: async (response) => {
+  //       console.log("Encoded JWT ID token: " + response.credential)
+  //       const { data } = await axios.post('http://localhost:3000/auth/google', {
+  //         googleToken: response.credential,
+  //       });
+
+  //       localStorage.setItem('access_token', data.access_token);
+
+  //       // navigate to the home page or do magic stuff
+  //     },
+  //   });
+  //   google.accounts.id.renderButton(
+  //     // HTML element ID where the button will be rendered
+  //     // this should be existed in the DOM
+  //     document.getElementById('buttonDiv'),
+  //     // customization attributes
+  //     { theme: 'outline', size: 'large' },
+  //   );
+  //   // to display the One Tap dialog, or comment to remove the dialog
+  //   google.accounts.id.prompt();
+  // }, []);
+  
+
   return (
     <div
       style={{
@@ -17,7 +46,7 @@ export function Login() {
         type="button"
         className="btn btn-success"
         style={{ fontSize: "24px", fontWeight: "bold", color: "black" }}
-        onClick={ async () => {
+        onClick={async () => {
           const url = new URL(getBaseUrl());
           url.pathname = "/login";
 
@@ -27,13 +56,29 @@ export function Login() {
             window.location.href = data.data;
             // navigate(`${data.data}`);
           } catch (error) {
-            console.log("🚀 ~ Login ~ error:", error)
-            
+            console.log("🚀 ~ Login ~ error:", error);
           }
         }}
       >
         LOG IN
       </button>
+      {/* <div id="buttonDiv"></div> */}
+      <GoogleLogin
+      onSuccess={async (response) => {
+        
+        console.log("Encoded JWT ID token: " + response.credential);
+        const { data } = await axios.post("http://localhost:3000/auth/google", {
+          googleToken: response.credential,
+        });
+
+        localStorage.setItem("access_token", data.access_token);
+
+        // navigate to the home page or do magic stuff
+      }}
+      onError={() => {
+        console.log("Login error");
+      }}
+      />
     </div>
   );
 }
