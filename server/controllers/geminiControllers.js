@@ -5,56 +5,51 @@ class GeminiControllers {
   static async getGemini(req, res) {
     let artists = [];
     let tracks = [];
-    //fetch top artists
+
+    const headers = { Authorization: req.headers.authorization };
+
+    // Fetch top artists
     try {
       const response = await axios.get(
         "https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=10",
-        {
-          headers: {
-            Authorization: req.headers.authorization,
-          },
-        }
+        { headers }
       );
-      artists = response.data.items.map((artist) => {
-        return {
-          name: artist.name,
-          genres: artist.genres,
-        };
-      });
-      //   res.json(artists);
+      artists = response.data.items.map((artist) => ({
+        name: artist.name,
+        genres: artist.genres,
+      }));
+      console.log(artists)
     } catch (error) {
-      console.error(error);
-      res.status(500).send("Error fetch top artists");
+      console.error("Error fetching top artists:", error);
+      return res
+        .status(error.status)
+        .json({ error: "Failed to fetch top artists" });
     }
 
-    //fetch top tracks
+    // Fetch top tracks
     try {
       const response = await axios.get(
         "https://api.spotify.com/v1/me/top/tracks?time_range=short_term&limit=10",
-        {
-          headers: {
-            Authorization: req.headers.authorization,
-          },
-        }
+        { headers }
       );
-      tracks = response.data.items.map((track) => {
-        return {
-          name: track.name,
-          artist:
-            track.artists.length < 1
-              ? track.artists[0].name
-              : track.artists.map((artist) => artist.name).join(", "),
-          album: track.album.name,
-          image: track.album.images[0].url,
-          release_date: track.album.release_date,
-        };
-      });
+      tracks = response.data.items.map((track) => ({
+        title: track.name,
+        artist:
+          track.artists.length > 0
+            ? track.artists.map((artist) => artist.name).join(", ")
+            : "Unknown Artist",
+      }));
+      console.log(tracks)
     } catch (error) {
-      console.error(error);
-      //   res.status(500).send("Error fetch top tracks");
+      console.error("Error fetching top tracks:", error.message);
+      return res.status(500).json({ error: "Failed to fetch top tracks" });
     }
 
-    //using gemini generative AI
+    // Using Gemini Generative AI
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "GEMINI_API_KEY is not set" });
+    }
+
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     const model = genAI.getGenerativeModel({
@@ -64,51 +59,62 @@ class GeminiControllers {
       },
     });
 
-    const prompt = `Give me 10 song recomendations based on my top artists and tracks 
-    here is the reference:
-    ${artists.map((artist) => artist.name).join(", ")}
-    ${tracks.map((track) => track.name).join(", ")}
-    using this json schema:
+    const prompt = `Give me 10 song recommendations based on my top artists and tracks:
+    Artists: ${artists.map((artist) => artist.name).join(", ")}
+    Tracks: ${tracks.map((track) => track.name).join(", ")}
+    Use this JSON schema:
     Song={'title':string, 'artist':string}
     Return: Array<Song>`;
-
+    let songsString = [];
     try {
       const result = await model.generateContent(prompt);
+
+      if (
+        !result ||
+        !result.response ||
+        !result.response.candidates ||
+        !result.response.candidates[0] ||
+        !result.response.candidates[0].content ||
+        !result.response.candidates[0].content.parts ||
+        !result.response.candidates[0].content.parts[0].text
+      ) {
+        throw new Error("Invalid AI response format");
+      }
+
       const songs = JSON.parse(
         result.response.candidates[0].content.parts[0].text
       );
 
-      //make function to replace " " with "+" for each element in a string
-      const replaceSpace = (str) => {
-        return str.split(" ").join("+");
-      };
-
-      const songsString = songs.map((e) =>
-        replaceSpace(`${e.title} ${e.artist}`)
+      songsString = songs.map((e) =>
+        `${e.title} ${e.artist}`.replace(/ /g, "+")
       );
-      //   const songUrl = songsString.map()
 
-      // try to get song url
-      try {
-        const response = await axios.get(
-          `https://api.spotify.com/v1/search?q=${songsString[0]}&type=track&limit=1`,
-          {
-            headers: {
-              Authorization: req.headers.authorization,
-            },
-          }
-        );
-      } catch (error) {
-        console.error(error);
-        res.status(500).send("Error fetch top tracks");
-      }
-
-
-
-
-      res.json(songsString);
+      console.log(songsString);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Error processing AI response:", error.message);
+      res
+        .status(500)
+        .json({ error: "Failed to generate song recommendations" });
+    }
+
+    //get song url
+    try {
+      const songsUrl = await Promise.all(
+        songsString.map(async (song, i) => {
+          console.log(song, i);
+          const response = await axios.get(
+            `https://api.spotify.com/v1/search?q=${song}&type=track&market=ID&limit=1&offset=0`,
+            { headers }
+          );
+          return response.data.tracks.items[0].uri;
+        })
+      );
+    
+      console.log(songsUrl);
+      res.json( songsUrl ); // Send the resolved songsUrl as the response
+    } catch (error) {
+      console.error("Error fetching songs:", error);
+      return res.status(500).json({ error: "Failed to fetch songs" });
     }
   }
 }
