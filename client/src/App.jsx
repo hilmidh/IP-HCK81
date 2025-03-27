@@ -9,6 +9,7 @@ import { NonSpotify } from "./pages/NonSpotify";
 import { LoginLayout } from "./layouts/LoginLayout";
 import { AuthLayout } from "./layouts/AuthLayout";
 import { Playlist } from "./pages/Playlist";
+import { Redirect } from "./layouts/Redirect";
 //import env from "react-dotenv";
 // import dotenv from "dotenv";
 // dotenv.config();
@@ -19,6 +20,7 @@ function App() {
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Redirect />} />
             <Route path="/non-spotify" element={<NonSpotify />} />
             <Route path="/callback" element={<Callback />} />
 
