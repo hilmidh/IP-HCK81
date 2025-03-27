@@ -18,7 +18,9 @@ const Callback = () => {
         const response = await axios.get(`${getBaseUrl()}/callback?code=${code}&state=${state}`);
         // console.log("🚀 ~ Callback ~ response:", response);
         console.log("🚀 ~ Callback ~ response.data:", response.data);
-        navigate("/");
+        localStorage.setItem("spotify_token", response.data.access_token)
+
+        navigate("/home");
       } catch (error) {
         console.log("🚀 ~ Callback ~ error:", error);
       }

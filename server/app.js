@@ -1,6 +1,6 @@
-if (process.env.NODE_ENV !== "production") {
+
   require("dotenv").config();
-}
+
 
 const axios = require("axios");
 var express = require("express");
@@ -16,15 +16,12 @@ const { SpotifyControllers } = require("./controllers/spotifyController");
 const { User } = require("./models");
 
 const {OAuth2Client} = require('google-auth-library');
+// const { authentication } = require("./middlewares/authentication");
 const client = new OAuth2Client();
 
 
 
 var app = express();
-
-let spotifyToken = ""
-
-module.exports = {spotifyToken}
 
 
 app
@@ -52,11 +49,12 @@ app.post("/auth/google", async (req, res) => {
       },
       hooks: false,
     });
+    
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
     res.status(created ? 201 : 200).json({ access_token: token });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -65,6 +63,16 @@ app.get("/login", SpotifyControllers.login);
 app.get("/callback", SpotifyControllers.callback);
 
 app.post("/refresh_token", SpotifyControllers.refresh_token);
+
+// app.use(authentication)
+app.get('getCurrentUser', async (req, res) => {
+  try {
+    const data = await SpotifyControllers.getUser();
+    res.json(data);
+  } catch (error) {
+    res.status(error.status).send(error)
+  }
+})
 
 app.get("/getuser", async (req, res) => {
   try {
@@ -94,6 +102,21 @@ app.get("/gettopartists", async (req, res) => {
 });
 
 app.post("/generate", GeminiControllers.getGemini);
+
+
+app.put("/updatePlaylistName", async (req, res) => {
+  try {
+    const { playlistId, name } = req.body;
+    const data = await SpotifyControllers.updatePlaylistName(playlistId, name);
+    res.json(data);
+  } catch (error) {
+    res.status(error.status).send(error);
+  }
+})
+
+// app.get('loggedIn', async () => {
+
+// })
 
 console.log("Listening on 3000");
 app.listen(3000);

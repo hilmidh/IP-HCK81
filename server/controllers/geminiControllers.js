@@ -189,7 +189,10 @@ class GeminiControllers {
       // }
 
       let data = await SpotifyControllers.addSong(playlistId, songsUri);
-      res.json(data);
+      console.log(data)
+
+      let playlist = await SpotifyControllers.getPlaylist(playlistId);
+      res.json(playlist);
     } catch (error) {
       res.send(error);
     }
