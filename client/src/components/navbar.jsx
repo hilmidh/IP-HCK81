@@ -15,7 +15,7 @@ export function Navbar() {
 
   const logout = () => {
     localStorage.clear();
-    navigate("/login");
+    // navigate("/login");
   };
   return (
     <nav
@@ -33,9 +33,9 @@ export function Navbar() {
       <div className="navbar-collapse" id="navbarText">
         <ul className="navbar-nav ml-auto">
           <li className="nav-item active">
-            <a className="nav-link" onClick={logout}>
+            <Link className="nav-link" onClick={logout} to={"/login"}>
               Logout
-            </a>
+            </Link>
           </li>
         </ul>
       </div>

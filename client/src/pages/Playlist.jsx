@@ -21,7 +21,15 @@ export function Playlist() {
       setPlaylist(data);
       setPlaylistId(data.id);
     } catch (error) {
-      console.log(error.message);
+      Swal.fire({
+        title: error.response.status,
+        text: error.response.data.message,
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+
+      localStorage.clear();
+      navigate("/login");
     }
   };
 
@@ -41,7 +49,15 @@ export function Playlist() {
       // setPlaylistName(data.name);
       console.log(data)
     } catch (error) {
-      console.log(error.message);
+      Swal.fire({
+        title: error.response.status,
+        text: error.response.data.message,
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+
+      localStorage.clear();
+      navigate("/login");
     }
   }
 
@@ -58,15 +74,15 @@ export function Playlist() {
         alignItems: "center",
       }}
     >
-      <h1>{playlistName}</h1>
-      <form onSubmit={() => {changePlaylistName}}>
+      <h1>{playlist.name}</h1>
+      {/* <form onSubmit={() => {changePlaylistName}}>
         <input 
         placeholder="Enter playlist name"
         value={playlistName}
         onChange={(e) => setPlaylistName(e.target.value)}
         />
         <button type="submit">change playlist name</button>
-      </form>
+      </form> */}
       <p>You can check your spotify account to listen to this playlist</p>
       <button
         type="button"
@@ -80,7 +96,7 @@ export function Playlist() {
         className="table table-dark table-striped"
         style={{ width: "50%" }}
       >
-        <thead>
+        <thead> 
           <tr>
             <th scope="col">#</th>
             <th scope="col">Title</th>

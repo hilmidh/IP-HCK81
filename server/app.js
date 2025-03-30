@@ -88,7 +88,7 @@ app.get("/gettoptracks", async (req, res) => {
     const data = await SpotifyControllers.getTopTracks();
     res.json(data);
   } catch (error) {
-    res.send(error)
+    res.status(error.status).send(error)
   }
 });
 
@@ -97,7 +97,7 @@ app.get("/gettopartists", async (req, res) => {
     const data = await SpotifyControllers.getTopArtists();
     res.json(data);
   } catch (error) {
-    res.send(error)
+    res.status(error.status).send(error)
   }
 });
 

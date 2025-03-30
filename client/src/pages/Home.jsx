@@ -33,7 +33,15 @@ export function Home() {
       setArtists(dataArtis);
       //   console.log(data);
     } catch (error) {
-      console.log(error);
+      Swal.fire({
+        title: error.response.status,
+        text: error.response.data.message,
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+
+      localStorage.clear();
+      navigate("/login");
     }
   };
 
@@ -41,7 +49,6 @@ export function Home() {
     fetchData();
   }, []);
 
-  // return <Navigate to="/login" />;
   return (
     <div
       style={{
@@ -56,7 +63,9 @@ export function Home() {
         type="button"
         class="btn btn-succes btn-lg"
         style={{ width: "20%", backgroundColor: "green", fontWeight: "bold" }}
-        onClick={() => {navigate("/home/playlist")}}
+        onClick={() => {
+          navigate("/home/playlist");
+        }}
       >
         Generate your playlist
       </button>
