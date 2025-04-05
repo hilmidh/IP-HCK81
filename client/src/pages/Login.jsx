@@ -66,6 +66,13 @@ export function Login() {
               // navigate(`${data.data}`);
             } catch (error) {
               console.log("🚀 ~ Login ~ error:", error);
+              Swal.fire({
+                theme: 'dark',
+                title: error.name,
+                text: error.message,
+                icon: "error",
+                confirmButtonText: "Close",
+              });
             }
           }}
         >
@@ -86,13 +93,26 @@ export function Login() {
               localStorage.setItem("google_token", data.access_token);
             } catch (error) {
               console.log(error);
+              Swal.fire({
+                title: error.name,
+                text: error.message,
+                icon: "error",
+                confirmButtonText: "Close",
+              });
             }
 
             // navigate to the home page or do magic stuff
             navigate("/non-spotify");
           }}
           onError={() => {
-            console.log("Login error");
+            console.log("Login error gooogleeee");
+            Swal.fire({
+              theme: 'dark',
+              title: error.name,
+              text: error.message,
+              icon: "error",
+              confirmButtonText: "Close",
+            });
           }}
         />
       </div>

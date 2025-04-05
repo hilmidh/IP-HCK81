@@ -33,15 +33,29 @@ export function Home() {
       setArtists(dataArtis);
       //   console.log(data);
     } catch (error) {
-      Swal.fire({
-        title: error.response.status,
-        text: error.response.data.message,
-        icon: "error",
-        confirmButtonText: "Close",
-      });
+      console.log(error, "<<<<<<<<<<<<<<<");
+      if (error.name == "AxiosError") {
+        Swal.fire({
+          theme: "dark",
+          title: error.name,
+          text: error.message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+        localStorage.clear();
+        navigate("/login");
+      } else {
+        Swal.fire({
+          theme: "dark",
+          title: error.response.status,
+          text: error.response.data.message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
 
-      localStorage.clear();
-      navigate("/login");
+        localStorage.clear();
+        navigate("/login");
+      }
     }
   };
 
