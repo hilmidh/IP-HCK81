@@ -1,14 +1,20 @@
 import { Navigate, useNavigate } from "react-router";
 import { HomeCard } from "../components/HomeCard";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchSongs, fetchArtists } from "../store/musicSlice";
 import { useEffect, useState } from "react";
 import { getBaseUrl } from "../helpers/getBaseUrl";
 import axios from "axios";
 import { ArtistCard } from "../components/ArtistCard";
 
 export function Home() {
-  const [songs, setSongs] = useState([]);
-  const [artists, setArtists] = useState([]);
+  // const [songs, setSongs] = useState([]);
+  // const [artists, setArtists] = useState([]);
   const navigate = useNavigate();
+
+  // pake redux
+  const dispatch = useDispatch();
+  const { songs, artists, loading, error } = useSelector((state) => state.music);
 
   const fetchData = async () => {
     const url = new URL(getBaseUrl());
@@ -60,8 +66,9 @@ export function Home() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    dispatch(fetchSongs());
+    dispatch(fetchArtists());
+  }, [dispatch]);
 
   return (
     <div

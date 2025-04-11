@@ -33,20 +33,6 @@ export const fetchArtists = createAsyncThunk("music/fetchArtists", async (_, thu
   }
 });
 
-export const fetchPlaylists = createAsyncThunk("music/fetchPlaylists", async (_, thunkAPI) => {
-  try {
-    const url = new URL(getBaseUrl());
-    url.pathname = "/getplaylists";
-    const { data } = await axios.get(url.toString(), {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
-      },
-    });
-    return data;
-  } catch (error) {
-    return thunkAPI.rejectWithValue(error.response?.data || error.message);
-  }
-});
 
 // Slice
 const musicSlice = createSlice({
@@ -88,19 +74,6 @@ const musicSlice = createSlice({
       state.error = action.payload;
     });
 
-    // Playlists
-    builder.addCase(fetchPlaylists.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchPlaylists.fulfilled, (state, action) => {
-      state.loading = false;
-      state.playlists = action.payload;
-    });
-    builder.addCase(fetchPlaylists.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    });
   },
 });
 
