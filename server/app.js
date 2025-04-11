@@ -1,4 +1,6 @@
-require("dotenv").config();
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 
 var express = require("express");
 const jwt = require("jsonwebtoken");
@@ -93,13 +95,9 @@ app.get("/gettopartists", async (req, res) => {
 
 app.post("/generate", GeminiControllers.getGemini);
 
-
-console.log("Listening on 3000");
-app.listen(3000);
+const port = process.env.PORT || 3000;
+console.log(`Listening on ${port}`);
+app.listen(port);
 // module.exports = {
 //   app
 // };
-
-
-
-

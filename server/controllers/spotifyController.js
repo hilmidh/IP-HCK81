@@ -88,7 +88,7 @@ class SpotifyControllers {
           //register or login user
           //1. get user data
           const userData = await SpotifyControllers.getUser();
-          console.log(userData)
+          // console.log(userData)
           //2. check if user exists in database
           const [user, created] = await User.findOrCreate({
             where: { email: userData.email },
