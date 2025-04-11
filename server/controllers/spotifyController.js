@@ -18,26 +18,29 @@ const generateRandomString = (length) => {
 var stateKey = "spotify_auth_state";
 
 let spotifyToken = "";
-// spotifyToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzQ0MzMwMDQzfQ.ZyEEFVL2liRSfJrdPXZCGaPPdlt-dvYbL-0SOwwTkns"
 
 class SpotifyControllers {
   static async login(req, res) {
-    var state = generateRandomString(16);
-    res.cookie(stateKey, state);
+    try {
+      var state = generateRandomString(16);
+      res.cookie(stateKey, state);
 
-    // your application requests authorization
-    var scope =
-      "user-read-private user-read-email user-top-read playlist-modify-public playlist-modify-private";
-    res.send(
-      "https://accounts.spotify.com/authorize?" +
-        querystring.stringify({
-          response_type: "code",
-          client_id: client_id,
-          scope: scope,
-          redirect_uri: redirect_uri,
-          state: state,
-        })
-    );
+      // your application requests authorization
+      var scope =
+        "user-read-private user-read-email user-top-read playlist-modify-public playlist-modify-private";
+      res.send(
+        "https://accounts.spotify.com/authorize?" +
+          querystring.stringify({
+            response_type: "code",
+            client_id: client_id,
+            scope: scope,
+            redirect_uri: redirect_uri,
+            state: state,
+          })
+      );
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   static async callback(req, res) {
@@ -85,14 +88,14 @@ class SpotifyControllers {
           //register or login user
           //1. get user data
           const userData = await SpotifyControllers.getUser();
-          // console.log(userData)
+          console.log(userData)
           //2. check if user exists in database
           const [user, created] = await User.findOrCreate({
             where: { email: userData.email },
             defaults: {
               name: userData.display_name,
               email: userData.email,
-              picture: userData.images[1].url,
+              // picture: userData.images[1].url ? userData.images[1].url : 'kosong',
               provider: "spotify",
               password: "spotify_id",
             },
@@ -101,9 +104,9 @@ class SpotifyControllers {
 
           //3. generate jwt token
           const token = signJWT({ id: user.id });
-          
+
           // console.log(user)
-          res.status(created ? 201 : 200).json({ access_token: token});
+          res.status(created ? 201 : 200).json({ access_token: token });
         } else {
           res.status(400).json({ error: "invalid_token" });
         }
@@ -333,8 +336,6 @@ class SpotifyControllers {
   }
 }
 
-
-
 module.exports = {
-  SpotifyControllers
+  SpotifyControllers,
 };

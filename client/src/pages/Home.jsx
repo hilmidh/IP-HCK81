@@ -16,54 +16,54 @@ export function Home() {
   const dispatch = useDispatch();
   const { songs, artists, loading, error } = useSelector((state) => state.music);
 
-  const fetchData = async () => {
-    const url = new URL(getBaseUrl());
-    url.pathname = "/gettoptracks";
-    const url2 = new URL(getBaseUrl());
-    url2.pathname = "/gettopartists";
+  // const fetchData = async () => {
+  //   const url = new URL(getBaseUrl());
+  //   url.pathname = "/gettoptracks";
+  //   const url2 = new URL(getBaseUrl());
+  //   url2.pathname = "/gettopartists";
 
-    try {
-      const { data } = await axios.get(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
-        },
-      });
-      setSongs(data);
-      const response = await axios.get(url2.toString(), {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
-        },
-      });
-      const dataArtis = response.data;
-      //   console.log(dataArtis.data, "<<<<<<<<<")
-      setArtists(dataArtis);
-      //   console.log(data);
-    } catch (error) {
-      console.log(error, "<<<<<<<<<<<<<<<");
-      if (error.name == "AxiosError") {
-        Swal.fire({
-          theme: "dark",
-          title: error.name,
-          text: error.message,
-          icon: "error",
-          confirmButtonText: "Close",
-        });
-        localStorage.clear();
-        navigate("/login");
-      } else {
-        Swal.fire({
-          theme: "dark",
-          title: error.response.status,
-          text: error.response.data.message,
-          icon: "error",
-          confirmButtonText: "Close",
-        });
+  //   try {
+  //     const { data } = await axios.get(url.toString(), {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
+  //       },
+  //     });
+  //     setSongs(data);
+  //     const response = await axios.get(url2.toString(), {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
+  //       },
+  //     });
+  //     const dataArtis = response.data;
+  //     //   console.log(dataArtis.data, "<<<<<<<<<")
+  //     setArtists(dataArtis);
+  //     //   console.log(data);
+  //   } catch (error) {
+  //     console.log(error, "<<<<<<<<<<<<<<<");
+  //     if (error.name == "AxiosError") {
+  //       Swal.fire({
+  //         theme: "dark",
+  //         title: error.name,
+  //         text: error.message,
+  //         icon: "error",
+  //         confirmButtonText: "Close",
+  //       });
+  //       localStorage.clear();
+  //       navigate("/login");
+  //     } else {
+  //       Swal.fire({
+  //         theme: "dark",
+  //         title: error.response.status,
+  //         text: error.response.data.message,
+  //         icon: "error",
+  //         confirmButtonText: "Close",
+  //       });
 
-        localStorage.clear();
-        navigate("/login");
-      }
-    }
-  };
+  //       localStorage.clear();
+  //       navigate("/login");
+  //     }
+  //   }
+  // };
 
   useEffect(() => {
     dispatch(fetchSongs());
