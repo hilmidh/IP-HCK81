@@ -29,6 +29,13 @@ export function NonSpotify() {
             // navigate(`${data.data}`);
           } catch (error) {
             console.log("🚀 ~ Login ~ error:", error);
+            Swal.fire({
+              theme: "dark",
+              title: error.name,
+              text: error.message,
+              icon: "error",
+              confirmButtonText: "Close",
+            });
           }
         }}
       >

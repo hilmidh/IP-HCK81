@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { getBaseUrl } from "../helpers/getBaseUrl";
 import axios from "axios";
+import { useNavigate } from "react-router";
 
 export function Playlist() {
   const [playlist, setPlaylist] = useState({});
   const [playlistName, setPlaylistName] = useState(playlist.name);
-  const [playlistId, setPlaylistId] = useState('');
+  const [playlistId, setPlaylistId] = useState("");
+  const navigate = useNavigate()
 
   const generatePlaylist = async () => {
     const url = new URL(getBaseUrl());
@@ -21,35 +23,66 @@ export function Playlist() {
       setPlaylist(data);
       setPlaylistId(data.id);
     } catch (error) {
-      console.log(error.message);
+      // console.log(error, "<<<<<<<<<<<<<<<<<<<<<");
+      if (error.name == "AxiosError") {
+        Swal.fire({
+          theme: "dark",
+          title: error.name,
+          text: error.message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+        localStorage.clear();
+        navigate("/login");
+      } else {
+        Swal.fire({
+          theme: "dark",
+          title: error.response.status,
+          text: error.response.data.message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+
+        localStorage.clear();
+        navigate("/login");
+      }
     }
   };
 
-  const changePlaylistName = async () => {
-    const url = new URL(getBaseUrl());
-    url.pathname = "/updatePlaylistName";
+  // const changePlaylistName = async () => {
+  //   const url = new URL(getBaseUrl());
+  //   url.pathname = "/updatePlaylistName";
 
-    try {
-      const { data } = await axios.put(url.toString(),{
-        playlistId: playlistId,
-        name: playlistName,
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
-        },
-      });
-      // setPlaylistName(data.name);
-      console.log(data)
-    } catch (error) {
-      console.log(error.message);
-    }
-  }
+  //   try {
+  //     const { data } = await axios.put(url.toString(),{
+  //       playlistId: playlistId,
+  //       name: playlistName,
+  //     }, {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("spotify_token")}`,
+  //       },
+  //     });
+  //     // setPlaylistName(data.name);
+  //     console.log(data)
+  //   } catch (error) {
+  //     Swal.fire({
+  //       theme: 'dark',
+  //       title: error.response.status,
+  //       text: error.response.data.message,
+  //       icon: "error",
+  //       confirmButtonText: "Close",
+  //     });
+
+  //     localStorage.clear();
+  //     navigate("/login");
+  //   }
+  // }
 
   useEffect(() => {
     // generatePlaylist();
   }, []);
-    
-    return (
+
+  return (
     <div
       style={{
         display: "flex",
@@ -58,15 +91,15 @@ export function Playlist() {
         alignItems: "center",
       }}
     >
-      <h1>{playlistName}</h1>
-      <form onSubmit={() => {changePlaylistName}}>
+      <h1>{playlist.name}</h1>
+      {/* <form onSubmit={() => {changePlaylistName}}>
         <input 
         placeholder="Enter playlist name"
         value={playlistName}
         onChange={(e) => setPlaylistName(e.target.value)}
         />
         <button type="submit">change playlist name</button>
-      </form>
+      </form> */}
       <p>You can check your spotify account to listen to this playlist</p>
       <button
         type="button"
@@ -86,7 +119,6 @@ export function Playlist() {
             <th scope="col">Title</th>
             <th scope="col">Artist</th>
             <th scope="col">Album</th>
-            
           </tr>
         </thead>
         <tbody>
@@ -96,7 +128,6 @@ export function Playlist() {
               <td>{song.title}</td>
               <td>{song.artist}</td>
               <td>{song.album}</td>
-              
             </tr>
           ))}
         </tbody>

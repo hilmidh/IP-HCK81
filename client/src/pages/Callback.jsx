@@ -23,6 +23,14 @@ const Callback = () => {
         navigate("/home");
       } catch (error) {
         console.log("🚀 ~ Callback ~ error:", error);
+        Swal.fire({
+          theme: 'dark',
+          title: error.name,
+          text: error.message,
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+        navigate('/login')
       }
     };
 
