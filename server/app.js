@@ -1,12 +1,8 @@
 require("dotenv").config();
 
-const axios = require("axios");
 var express = require("express");
-var request = require("request");
 const jwt = require("jsonwebtoken");
-var crypto = require("crypto");
 var cors = require("cors");
-var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
 
 const { GeminiControllers } = require("./controllers/geminiControllers");
@@ -97,26 +93,13 @@ app.get("/gettopartists", async (req, res) => {
 
 app.post("/generate", GeminiControllers.getGemini);
 
-app.put("/updatePlaylistName", async (req, res) => {
-  try {
-    const { playlistId, name } = req.body;
-    const data = await SpotifyControllers.updatePlaylistName(playlistId, name);
-    res.json(data);
-  } catch (error) {
-    res.status(error.status).send(error);
-  }
-});
-
-app.get("/getplaylist", async (req, res) => {
-  console.log("JALANNNNN")
-  try {
-    const { playlistId } = req.body;
-    const data = await SpotifyControllers.getPlaylist(playlistId);
-    res.json(data)
-  } catch (error) {
-    res.status(error.status).send(error);
-  }
-});
 
 console.log("Listening on 3000");
 app.listen(3000);
+// module.exports = {
+//   app
+// };
+
+
+
+

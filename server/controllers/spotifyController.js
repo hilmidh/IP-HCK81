@@ -18,6 +18,7 @@ const generateRandomString = (length) => {
 var stateKey = "spotify_auth_state";
 
 let spotifyToken = "";
+// spotifyToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzQ0MzMwMDQzfQ.ZyEEFVL2liRSfJrdPXZCGaPPdlt-dvYbL-0SOwwTkns"
 
 class SpotifyControllers {
   static async login(req, res) {

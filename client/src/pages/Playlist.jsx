@@ -23,7 +23,7 @@ export function Playlist() {
       setPlaylist(data);
       setPlaylistId(data.id);
     } catch (error) {
-      console.log(error, "<<<<<<<<<<<<<<<<<<<<<");
+      // console.log(error, "<<<<<<<<<<<<<<<<<<<<<");
       if (error.name == "AxiosError") {
         Swal.fire({
           theme: "dark",
